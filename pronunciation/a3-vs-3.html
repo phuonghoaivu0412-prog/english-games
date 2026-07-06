@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>/ɑː/ vs /ɜː/ Game</title>
+<style>
+body{
+    font-family:Arial;
+    max-width:1000px;
+    margin:auto;
+    padding:20px;
+    background:#f4f6fb;
+}
+h1{text-align:center;}
+#pool,.box{
+    border:2px dashed #999;
+    padding:10px;
+    border-radius:10px;
+}
+#pool{min-height:80px;}
+.area{
+    display:flex;
+    gap:20px;
+    margin-top:20px;
+}
+.box{
+    flex:1;
+    min-height:250px;
+}
+.word{
+    display:inline-block;
+    padding:8px 12px;
+    margin:5px;
+    border:1px solid #333;
+    border-radius:20px;
+    background:white;
+    cursor:move;
+}
+</style>
+</head>
+
+<body>
+
+<h1>/ɑː/ vs /ɜː/ Challenge</h1>
+
+<p>Drag the words into the correct box.</p>
+
+<div id="pool"></div>
+
+<div class="area">
+    <div class="box" id="a3">
+        <h2>/ɑː/</h2>
+    </div>
+
+    <div class="box" id="e3">
+        <h2>/ɜː/</h2>
+    </div>
+
+    <div class="box" id="other">
+        <h2>Other sounds</h2>
+    </div>
+</div>
+
+<br>
+<button onclick="check()">Submit</button>
+
+<h2 id="result"></h2>
+
+<script>
+
+const data = {
+    a3:[
+        "sharp","laugh","balm","card",
+        "charming","basket","argue","march"
+    ],
+
+    e3:[
+        "curse","dirt","worth","term",
+        "worm","worst","burst","earn"
+    ],
+
+    other:[
+        "ship","cat","book","pen",
+        "food","dog","bike","house"
+    ]
+};
+
+let words=[];
+
+for(let k in data){
+    data[k].forEach(w=>{
+        words.push({
+            word:w,
+            group:k
+        });
+    });
+}
+
+words.sort(()=>Math.random()-0.5);
+
+const pool=document.getElementById("pool");
+
+words.forEach(x=>{
+
+    let d=document.createElement("div");
+
+    d.className="word";
+    d.innerHTML=x.word;
+    d.id=x.word;
+    d.dataset.group=x.group;
+
+    d.draggable=true;
+
+    d.ondragstart=e=>{
+        e.dataTransfer.setData(
+            "text",
+            x.word
+        );
+    };
+
+    pool.appendChild(d);
+});
+
+document
+.querySelectorAll(".box")
+.forEach(box=>{
+
+    box.ondragover=e=>{
+        e.preventDefault();
+    };
+
+    box.ondrop=e=>{
+        e.preventDefault();
+
+        let id=
+            e.dataTransfer.getData("text");
+
+        box.appendChild(
+            document.getElementById(id)
+        );
+    };
+});
+
+function check(){
+
+    let score=0;
+
+    words.forEach(x=>{
+
+        if(
+            document
+            .getElementById(x.word)
+            .parentNode.id
+            ==
+            x.group
+        ){
+            score++;
+        }
+    });
+
+    result.innerHTML=
+        "Score: "
+        +score+
+        "/"+
+        words.length;
+}
+
+</script>
+
+</body>
+</html>
