@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>/uː/ vs /iː/ vs /ɔː/ Challenge</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial,sans-serif;
+    background:#f4f6fb;
+    max-width:1400px;
+    margin:auto;
+    padding:20px;
+}
+
+.container{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+}
+
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+h1{
+    margin:0;
+}
+
+.timer{
+    font-size:24px;
+    font-weight:bold;
+    color:#e74c3c;
+}
+
+#pool{
+    border:2px dashed #999;
+    background:#fafafa;
+    min-height:120px;
+    padding:10px;
+    border-radius:10px;
+}
+
+.game-area{
+    display:flex;
+    gap:15px;
+    margin-top:20px;
+    flex-wrap:wrap;
+}
+
+.box{
+    flex:1;
+    min-width:250px;
+    min-height:320px;
+    border:2px dashed #999;
+    border-radius:10px;
+    padding:10px;
+}
+
+.box h2{
+    text-align:center;
+}
+
+.word{
+    display:inline-block;
+    background:white;
+    border:1px solid #333;
+    border-radius:20px;
+    padding:8px 14px;
+    margin:5px;
+    cursor:move;
+}
+
+button{
+    margin-top:20px;
+    padding:12px 24px;
+    font-size:16px;
+}
+
+.correct{
+    color:green;
+}
+
+.wrong{
+    color:red;
+}
+
+#completed{
+    display:none;
+    text-align:center;
+    font-size:24px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container" id="game">
+
+<div class="header">
+<h1>/uː/ vs /iː/ vs /ɔː/ Challenge</h1>
+<div class="timer">
+⏰ <span id="timer">90</span>s
+</div>
+</div>
+
+<p>
+Drag each word into the correct group.
+</p>
+
+<div id="pool"></div>
+
+<div class="game-area">
+
+<div class="box" id="u">
+<h2>/uː/</h2>
+</div>
+
+<div class="box" id="i">
+<h2>/iː/</h2>
+</div>
+
+<div class="box" id="o">
+<h2>/ɔː/</h2>
+</div>
+
+<div class="box" id="other">
+<h2>Other sounds</h2>
+</div>
+
+</div>
+
+<button onclick="submitGame()">
+Submit
+</button>
+
+<div id="result"></div>
+
+</div>
+
+<div id="completed"></div>
+
+<script>
+
+const STORAGE="uio_game";
+
+if(localStorage.getItem(STORAGE)){
+
+    document.getElementById("game").style.display="none";
+
+    document.getElementById("completed").style.display="block";
+
+    document.getElementById("completed").innerHTML=
+        "✅ You have already completed this game.<br><br>Score: "
+        + localStorage.getItem(STORAGE);
+}
+
+else{
+
+const data={
+
+u:[
+"shoot","school","moon","room",
+"fool","broom","choose","glue",
+"shoe","juice","truth","through"
+],
+
+i:[
+"deep","green","teacher","beach",
+"eat","sleep","peace","feet",
+"stream","achieve","shield","people"
+],
+
+o:[
+"wore","store","short","sport",
+"talk","walk","all","small",
+"thought","bought","quarter","ward"
+],
+
+other:[
+"took","map","clay","word",
+"chapter","share","crumb","wonder",
+"should","cake","wish","ship"
+]
+
+};
+
+let words=[];
+
+for(let key in data){
+
+    data[key].forEach(word=>{
+
+        words.push({
+            word:word,
+            group:key
+        });
+
+    });
+
+}
+
+words.sort(()=>Math.random()-0.5);
+
+const pool=document.getElementById("pool");
+
+words.forEach(item=>{
+
+    let d=document.createElement("div");
+
+    d.className="word";
+    d.innerHTML=item.word;
+    d.id=item.word;
+    d.dataset.group=item.group;
+
+    d.draggable=true;
+
+    d.addEventListener(
+        "dragstart",
+        e=>{
+            e.dataTransfer.setData(
+                "text",
+                item.word
+            );
+        }
+    );
+
+    pool.appendChild(d);
+
+});
+
+document
+.querySelectorAll(".box")
+.forEach(box=>{
+
+    box.addEventListener(
+        "dragover",
+        e=>e.preventDefault()
+    );
+
+    box.addEventListener(
+        "drop",
+        e=>{
+
+            e.preventDefault();
+
+            let id=
+                e.dataTransfer
+                .getData("text");
+
+            box.appendChild(
+                document
+                .getElementById(id)
+            );
+        }
+    );
+
+});
+
+let sec=90;
+
+const clock=setInterval(()=>{
+
+    sec--;
+
+    timer.innerHTML=sec;
+
+    if(sec<=0){
+
+        clearInterval(clock);
+
+        submitGame();
+    }
+
+},1000);
+
+window.submitGame=function(){
+
+    clearInterval(clock);
+
+    let score=0;
+
+    let mistakes=[];
+
+    words.forEach(item=>{
+
+        let current=
+            document
+            .getElementById(item.word)
+            .parentNode.id;
+
+        if(current===item.group){
+
+            score++;
+
+        }
+
+        else{
+
+            let answer="";
+
+            if(item.group==="u")
+                answer="/uː/";
+
+            else if(item.group==="i")
+                answer="/iː/";
+
+            else if(item.group==="o")
+                answer="/ɔː/";
+
+            else
+                answer="Other sounds";
+
+            mistakes.push(
+                item.word+
+                " → "+
+                answer
+            );
+        }
+
+    });
+
+    document
+    .querySelectorAll(".word")
+    .forEach(
+        w=>w.draggable=false
+    );
+
+    let level="";
+
+    if(score>=42)
+        level="🏆 Excellent";
+
+    else if(score>=32)
+        level="👍 Good";
+
+    else
+        level="📚 Keep practicing";
+
+    result.innerHTML=
+
+        "<h2 class='correct'>Score: "
+        +score+
+        "/"+
+        words.length+
+        "</h2>"
+
+        +"<h3>"
+        +level+
+        "</h3>"
+
+        +(mistakes.length
+        ?"<p class='wrong'><b>Corrections:</b><br>"
+        +mistakes.join("<br>")
+        +"</p>"
+        :"Perfect!");
+
+    localStorage.setItem(
+        STORAGE,
+        score+"/"+words.length
+    );
+
+}
+
+}
+</script>
+
+</body>
+</html>
